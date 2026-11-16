@@ -5,6 +5,9 @@ __pycache__/
 
 # C extensions
 *.so
+Dental_Price_List_EUR.pdf
+Dental_Price_List_EUR.openpyxl
+Screenshot 2026-11-16 at 3.53.44 PM.png
 
 # Distribution / packaging
 .Python
