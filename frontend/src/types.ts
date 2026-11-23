@@ -3,10 +3,20 @@
 export interface Health {
   status: string;
   llm: string;
-  model: string;
   catalog_items: number;
   rules_validated: boolean;
   clinic_name: string;
+}
+
+export interface AccountUser {
+  name: string;
+  email: string;
+}
+
+export interface AuthStatus {
+  required?: boolean;
+  authenticated: boolean;
+  user: AccountUser | null;
 }
 
 export interface Session {
@@ -15,6 +25,19 @@ export interface Session {
   state: "CREATED" | "TRANSCRIBED" | "DRAFT" | "CONFIRMED";
   transcript: string;
   current_version: number;
+}
+
+export interface SessionSummary {
+  id: string;
+  patient_label: string;
+  state: Session["state"];
+  status: "DRAFT" | "FINAL" | null;
+  current_version: number;
+  total_eur: string | null;
+  stage_count: number;
+  preview: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface Transcript {

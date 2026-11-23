@@ -8,6 +8,7 @@ from pypdf import PdfReader
 
 from app.config import DATA_DIR
 from app.models.schemas import MapChoice, Procedure, ReviseOp
+from app.services.llm import LLMError
 from app.services.planner import Planner, clean_transcript
 
 NOTE_PROCEDURES = {
@@ -205,3 +206,28 @@ def test_confirming_never_claims_unreviewed_intervals_were_accepted(client, fake
     assert len(accepted) == 2 and not any("wait" in a for a in accepted)
     assert any(a.startswith("Default interval") for a in final["assumptions"])
     assert all(s["interval_after"]["assumed"] for s in final["stages"][:-1])
+
+
+def test_engine_errors_are_not_shown_to_the_dentist(client, fake_llm, wait_job):
+    def fail(*_args):
+        raise LLMError("Ollama is not running. Start the Ollama app.")
+
+    fake_llm.generate_json = fail
+    session = client.post("/api/sessions", json={}).json()
+    client.put(f"/api/sessions/{session['id']}/transcript", json={"text": "Root canal on 36"})
+    job = client.post(f"/api/sessions/{session['id']}/plan").json()
+    result = wait_job(client, job["job_id"])
+    assert result["status"] == "error"
+    assert "ollama" not in result["error"].lower()
+
+
+def test_pdf_preview_pages(client, fake_llm, wait_job):
+    fake_llm.extraction = NOTE_PROCEDURES["note_01"]
+    session_id, _ = start(client, wait_job)
+    base = f"/api/sessions/{session_id}/plans/1/pdf/pages"
+    pages = client.get(base).json()["pages"]
+    assert pages >= 1
+    image = client.get(f"{base}/1")
+    assert image.headers["content-type"] == "image/png"
+    assert image.content.startswith(b"\x89PNG")
+    assert client.get(f"{base}/{pages + 1}").status_code == 404

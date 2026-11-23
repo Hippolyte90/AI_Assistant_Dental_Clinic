@@ -32,6 +32,7 @@ AI assistant for a dental clinic, **running fully locally** (no cloud AI): the d
 
 - Never commit `.env`, `storage/`, audio files, or real patient data. Sample notes in `data/sample_notes/` are fine.
 - No patient names in logs.
+- The public link (`https://cuspia.dmb-site.site`) requires user accounts (`AUTH_REQUIRED=true`). Never start the tunnel with accounts off, never store a password in clear, never bind the app to `0.0.0.0`, and use synthetic notes only.
 - **Never add a call to a cloud AI/LLM/STT service** (OpenAI, Anthropic, Google, …) to the app. Everything must work offline once the models are downloaded.
 
 ## Commands (Windows; Python is a conda env in `.venv/`)
@@ -57,6 +58,7 @@ cd frontend && npm install && npm run dev                                 # http
 
 - Python: type hints everywhere, Pydantic v2 models in `app/models/schemas.py`, `pathlib` for paths, services have no FastAPI imports (testable on their own), and routes stay thin.
 - Prompts live in `backend/app/prompts/*.md`, not in Python strings. Clinic rules live in `backend/app/rules/clinic_rules.yaml`, synonyms in `backend/app/rules/synonyms.yaml`.
+- **The interface never mentions the AI model, Ollama, Whisper or local processing**, including in error messages. Technical details go to the server log.
 - Frontend: function components + hooks, typed API client in `src/api/client.ts`, types in `src/types.ts` mirroring the backend schemas.
 - Tests: unit tests mock the LLM and the transcriber. Every pricing or catalog change needs a test.
 

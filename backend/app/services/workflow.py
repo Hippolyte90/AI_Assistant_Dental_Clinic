@@ -18,6 +18,7 @@ from app.services.stt import STTError, Transcriber
 from app.store import Store
 
 logger = logging.getLogger(__name__)
+ASSISTANT_UNAVAILABLE = "The assistant is unavailable right now. Please try again."
 
 
 class WorkflowError(RuntimeError):
@@ -49,11 +50,16 @@ class Workflow:
 
     # ----------------------------------------------------------------- jobs
 
-    def submit(self, work: Callable[[Callable[[str], None]], dict]) -> str:
+    def submit(self, work: Callable[[Callable[[str], None]], dict], owner_id: str = "") -> str:
         """Queue an LLM job and return its id."""
         job_id = uuid.uuid4().hex
         with self._lock:
-            self.jobs[job_id] = {"id": job_id, "status": "queued", "step": "queued"}
+            self.jobs[job_id] = {
+                "id": job_id,
+                "owner_id": owner_id,
+                "status": "queued",
+                "step": "queued",
+            }
 
         def progress(step: str) -> None:
             with self._lock:
@@ -64,7 +70,10 @@ class Workflow:
             try:
                 result = work(progress)
                 update = {"status": "done", "step": "done", "result": result}
-            except (LLMError, STTError, WorkflowError) as exc:
+            except LLMError as exc:
+                logger.error("Assistant engine error: %s", exc)
+                update = {"status": "error", "step": "error", "error": ASSISTANT_UNAVAILABLE}
+            except (STTError, WorkflowError) as exc:
                 update = {"status": "error", "step": "error", "error": str(exc)}
             except Exception:
                 logger.exception("Job failed")

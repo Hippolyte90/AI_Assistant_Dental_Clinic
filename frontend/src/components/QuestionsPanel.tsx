@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import type { Answer, Question, QuestionOption } from "../types";
+import { CheckIcon, RefreshIcon, SpeakerIcon } from "./icons";
 import { eur } from "./PlanView";
 import { Recorder } from "./Recorder";
 
@@ -17,7 +18,7 @@ type Draft = Record<string, { option_id?: string; free_text?: string }>;
 function delta(option: QuestionOption): string {
   if (option.price_delta_eur === null) return "";
   const value = Number(option.price_delta_eur);
-  if (value === 0) return "no price change";
+  if (value === 0) return "Same price";
   return `${value > 0 ? "+" : "−"}${eur(Math.abs(value))}`;
 }
 
@@ -66,77 +67,117 @@ export function QuestionsPanel({ questions, busy, onApply, onConfirm, onError }:
     }));
   const hasChanges = answers.length > 0 || corrections.trim().length > 0;
   const blocking = questions.filter((question) => question.blocking);
+  const optional = questions.filter((question) => !question.blocking);
+  const answeredBlocking = blocking.filter((question) =>
+    answers.some((answer) => answer.question_id === question.id),
+  ).length;
   const canConfirm = !busy && !hasChanges && (blocking.length === 0 || acceptDefaults);
 
+  function renderQuestion(question: Question) {
+    const current = draft[question.id] ?? {};
+    const answered = answers.some((answer) => answer.question_id === question.id);
+    return (
+      <fieldset
+        className={answered ? "question answered" : "question"}
+        key={question.id}
+        disabled={busy}
+      >
+        <legend>{question.text}</legend>
+        <div className="options">
+          {question.options.map((option) => {
+            const selected = current.option_id === option.id;
+            return (
+              <button
+                type="button"
+                key={option.id}
+                aria-pressed={selected}
+                className={selected ? "option on" : "option"}
+                onClick={() => setDraft({ ...draft, [question.id]: { option_id: option.id } })}
+              >
+                <span>{option.label}</span>
+                {delta(option) && <small>{delta(option)}</small>}
+              </button>
+            );
+          })}
+        </div>
+        {question.allow_free_text && (
+          <div className="free">
+            <input
+              aria-label={`Other answer: ${question.text}`}
+              placeholder="Other answer"
+              value={current.free_text ?? ""}
+              onChange={(event) =>
+                setDraft({ ...draft, [question.id]: { free_text: event.target.value } })
+              }
+            />
+            <Recorder
+              compact
+              disabled={busy || listening}
+              onRecorded={(audio) =>
+                void voice(audio, (text) =>
+                  setDraft((old) => ({ ...old, [question.id]: { free_text: text } })),
+                )
+              }
+            />
+          </div>
+        )}
+      </fieldset>
+    );
+  }
+
   return (
-    <section className="questions" aria-label="Questions for the dentist">
-      <div className="section-head">
-        <h2>{questions.length ? `Questions (${questions.length})` : "No open questions"}</h2>
+    <section className="card questions" aria-label="Questions for the dentist">
+      <div className="card-head">
+        <div>
+          <h2>{blocking.length ? "A few details needed" : "Review and confirm"}</h2>
+          <p className="muted">
+            {blocking.length
+              ? `${answeredBlocking} of ${blocking.length} answered`
+              : "All required details are complete."}
+          </p>
+        </div>
         {questions.length > 0 && "speechSynthesis" in window && (
-          <label className="check">
-            <input type="checkbox" checked={speak} onChange={(e) => setSpeak(e.target.checked)} />
-            Read aloud
+          <label className={speak ? "toggle on" : "toggle"}>
+            <input
+              type="checkbox"
+              checked={speak}
+              onChange={(event) => setSpeak(event.target.checked)}
+            />
+            <SpeakerIcon size={15} /> Read aloud
           </label>
         )}
       </div>
 
-      {questions.map((question) => {
-        const current = draft[question.id] ?? {};
-        return (
-          <fieldset className="question" key={question.id} disabled={busy}>
-            <legend>
-              {question.text}
-              {!question.blocking && <span className="tag">optional</span>}
-            </legend>
-            <div className="options">
-              {question.options.map((option) => (
-                <button
-                  type="button"
-                  key={option.id}
-                  aria-pressed={current.option_id === option.id}
-                  className={current.option_id === option.id ? "option on" : "option"}
-                  onClick={() =>
-                    setDraft({ ...draft, [question.id]: { option_id: option.id } })
-                  }
-                >
-                  {option.label}
-                  {delta(option) && <small>{delta(option)}</small>}
-                </button>
-              ))}
-            </div>
-            {question.allow_free_text && (
-              <div className="free">
-                <input
-                  aria-label={`Other answer: ${question.text}`}
-                  placeholder="Or type an answer"
-                  value={current.free_text ?? ""}
-                  onChange={(e) =>
-                    setDraft({ ...draft, [question.id]: { free_text: e.target.value } })
-                  }
-                />
-                <Recorder
-                  compact
-                  disabled={busy || listening}
-                  onRecorded={(audio) =>
-                    void voice(audio, (text) =>
-                      setDraft((old) => ({ ...old, [question.id]: { free_text: text } })),
-                    )
-                  }
-                />
-              </div>
-            )}
-          </fieldset>
-        );
-      })}
+      {blocking.length > 0 && (
+        <div
+          className="progress-track"
+          role="progressbar"
+          aria-label="Questions answered"
+          aria-valuemin={0}
+          aria-valuemax={blocking.length}
+          aria-valuenow={answeredBlocking}
+        >
+          <span style={{ width: `${(answeredBlocking / blocking.length) * 100}%` }} />
+        </div>
+      )}
+
+      {blocking.map(renderQuestion)}
+
+      {optional.length > 0 && (
+        <details className="group">
+          <summary>Waiting times to confirm ({optional.length})</summary>
+          <div className="group-body">{optional.map(renderQuestion)}</div>
+        </details>
+      )}
 
       <label className="field">
-        <span>Other corrections</span>
+        <span>Other changes</span>
         <div className="free">
           <textarea
             rows={2}
             value={corrections}
             disabled={busy}
-            onChange={(e) => setCorrections(e.target.value)}
+            onChange={(event) => setCorrections(event.target.value)}
             placeholder="e.g. Remove the radiograph and add a filling on 21"
           />
           <Recorder
@@ -150,31 +191,39 @@ export function QuestionsPanel({ questions, busy, onApply, onConfirm, onError }:
       </label>
       {listening && <p className="muted">Transcribing your answer…</p>}
 
-      <div className="actions">
-        <button type="button" disabled={busy || !hasChanges} onClick={() => onApply(answers, corrections)}>
-          Apply and regenerate PDF
-        </button>
-        <button
-          type="button"
-          className="confirm"
-          disabled={!canConfirm}
-          onClick={() => onConfirm(acceptDefaults)}
-        >
-          Confirm final plan
-        </button>
+      <div className="action-bar">
+        {blocking.length > 0 && !hasChanges && (
+          <label className="check">
+            <input
+              type="checkbox"
+              checked={acceptDefaults}
+              disabled={busy}
+              onChange={(event) => setAcceptDefaults(event.target.checked)}
+            />
+            Accept the provisional choices for the {blocking.length} unanswered question
+            {blocking.length > 1 ? "s" : ""}
+          </label>
+        )}
+        {hasChanges && <p className="muted">Update the plan before confirming.</p>}
+        <div className="actions">
+          <button
+            type="button"
+            className="secondary grow"
+            disabled={busy || !hasChanges}
+            onClick={() => onApply(answers, corrections)}
+          >
+            <RefreshIcon size={16} /> Update plan
+          </button>
+          <button
+            type="button"
+            className="grow"
+            disabled={!canConfirm}
+            onClick={() => onConfirm(acceptDefaults)}
+          >
+            <CheckIcon size={16} /> Confirm plan
+          </button>
+        </div>
       </div>
-      {hasChanges && <p className="muted">Apply your changes before confirming.</p>}
-      {blocking.length > 0 && (
-        <label className="check">
-          <input
-            type="checkbox"
-            checked={acceptDefaults}
-            disabled={busy}
-            onChange={(e) => setAcceptDefaults(e.target.checked)}
-          />
-          Accept the provisional choices for the {blocking.length} unanswered question(s)
-        </label>
-      )}
     </section>
   );
 }

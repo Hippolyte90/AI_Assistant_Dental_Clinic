@@ -162,6 +162,7 @@ All routes are prefixed with `/api`. JSON unless stated.
 | GET | `/catalog` | – | items grouped by section |
 | GET | `/catalog/search?q=` | – | matching items |
 | POST | `/sessions` | `{patient_label?}` | `Session` |
+| GET | `/sessions` | – | signed-in user's `SessionSummary[]`, newest first |
 | GET | `/sessions/{id}` | – | `Session` (state, transcript, latest version) |
 | POST | `/sessions/{id}/audio` | multipart `file` | `Transcript` |
 | PUT | `/sessions/{id}/transcript` | `{text}` | `Transcript` |
@@ -345,4 +346,7 @@ header (clinic, dentist, patient label, date, version, status) → summary box (
 | 2026-11-23 | Stages, questions and known mappings built by code (`families.yaml`), LLM limited to extraction, shortlist choice and corrections | More reliable and faster with a 4B model; measured on the practice notes |
 | 2026-11-23 | Extraction is grounded against the transcript | The model listed diagnoses, misplaced delays and sometimes skipped a sentence |
 | 2026-11-23 | Whisper model stored in `storage/models/`; PyAV pinned below 16 | This machine's `HF_HOME` points to a missing drive; PyAV 19 breaks faster-whisper 1.2.1 |
+| 2026-11-23 | Product UI (Cuspia) never names the model or local processing; engine errors are logged and replaced by a generic message | Requested by the project owner; dentists do not need engine details |
+| 2026-11-23 | Public access through a Cloudflare Tunnel to `127.0.0.1:8000`, protected by user accounts | Keeps the models and data on the owner's PC with no open inbound port; the link depends on that PC being on |
+| 2026-11-23 | Self-service accounts in `storage/users.json` (scrypt hashes, signed HttpOnly cookies); every session and job belongs to one user | People can sign up themselves without sharing one password, and cannot read each other's plans |
 | 2026-11-16 | Default model `qwen3:4b`, thinking off, CPU | Target is a Ryzen 5 5500U with 14 GB RAM and only an iGPU; measured 8.9 tok/s, output correct |

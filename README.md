@@ -1,10 +1,10 @@
-# AI Assistant for a Dental Clinic
+# Cuspia · Treatment Planning
 
-A dentist dictates the treatment. The assistant builds a **treatment plan** with stages, intervals and prices from the clinic price list, returns a **PDF**, **asks about anything unclear**, and **regenerates the PDF** until the dentist confirms it.
+An assistant for dental clinics. A dentist dictates the treatment. The assistant builds a **treatment plan** with stages, intervals and prices from the clinic price list, returns a **PDF**, **asks about anything unclear**, and **regenerates the PDF** until the dentist confirms it.
 
 **Everything runs on your computer.** Speech-to-text (faster-whisper) and the AI (Ollama) are local, so audio, notes and plans never leave the machine. After the models are downloaded, no internet connection is needed.
 
-![The assistant after a dictation](docs/screenshot.png)
+![Cuspia after a dictation](docs/screenshot.png)
 
 ## How it works
 
@@ -60,7 +60,20 @@ cd frontend
 npm run dev
 ```
 
-Open **http://localhost:5173**. The badge at the top right should say **AI ready**.
+Open **http://localhost:5173**. The status at the top right should say **Ready**.
+
+## Public link
+
+The app is published at **https://cuspia.dmb-site.site** through a Cloudflare Tunnel that runs on this PC.
+
+**To use it:** open the link, choose **Create account**, enter your name, email and a password of at least 8 characters. Each user sees only their own plans, and can reopen, continue, download or delete them from **My plans**. Passwords are stored as salted scrypt hashes, in `storage/users.json`, which is never committed.
+
+```powershell
+# Put the link online. Keep this window open and the PC awake.
+powershell -ExecutionPolicy Bypass -File scripts\start_public.ps1
+```
+
+Close the window or press Ctrl+C to take the link offline. The link only works while the PC is on, connected and running this script. Use synthetic notes only: this setup is not approved for real patient data.
 
 ## 3-minute demo
 
@@ -71,8 +84,8 @@ Use this dictation (speak it, or paste it):
 1. **Understands voice:** click **Start dictation**, read the text, click **Stop**. The transcript appears.
 2. **Generates a PDF:** click **Build treatment plan**. You get three stages and a draft PDF totalling **975.76 €**.
 3. **Asks questions:** the assistant asks which implant system and which crown type, because the dentist did not say.
-4. **Regenerates the PDF:** choose **Straumann** and **ST zirconia**, then click **Apply and regenerate PDF**. The total becomes **1 356.53 €**, and the screen lists what changed.
-5. **Confirms:** click **Confirm final plan** and download the final PDF.
+4. **Regenerates the PDF:** choose **Straumann** and **ST zirconia**, then click **Update plan**. The total becomes **1 356.53 €**, and the screen lists what changed.
+5. **Confirms:** click **Confirm plan** and download the final PDF.
 
 ## Tests
 

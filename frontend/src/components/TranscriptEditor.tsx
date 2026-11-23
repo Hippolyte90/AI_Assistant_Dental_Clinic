@@ -7,13 +7,13 @@ interface Props {
 export function TranscriptEditor({ value, onChange, disabled }: Props) {
   return (
     <label className="field">
-      <span>Dictation (check it, correct it, or type or paste notes)</span>
+      <span>Clinical notes</span>
       <textarea
-        rows={9}
+        rows={7}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         disabled={disabled}
-        placeholder="e.g. Root canal on 36 with a rubber dam. Two weeks later a core build-up on 36."
+        placeholder="Your dictation appears here. You can also type or paste notes, e.g. Root canal on 36 with a rubber dam. Two weeks later a core build-up on 36."
       />
     </label>
   );

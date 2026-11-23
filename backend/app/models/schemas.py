@@ -209,6 +209,7 @@ class Session(BaseModel):
     """A dictation session."""
 
     id: str
+    owner_id: str = ""
     patient_label: str = ""
     state: Literal["CREATED", "TRANSCRIBED", "DRAFT", "CONFIRMED"] = "CREATED"
     transcript: str = ""
@@ -216,3 +217,18 @@ class Session(BaseModel):
     current_version: int = 0
     plan_state: PlanState = Field(default_factory=PlanState)
     created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
+
+
+class SessionSummary(BaseModel):
+    """One line of the "My plans" page."""
+
+    id: str
+    patient_label: str
+    state: str
+    status: Literal["DRAFT", "FINAL"] | None = None
+    current_version: int
+    total_eur: Decimal | None = None
+    stage_count: int = 0
+    preview: str = ""
+    created_at: datetime
+    updated_at: datetime

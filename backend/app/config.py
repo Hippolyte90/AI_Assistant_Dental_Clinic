@@ -31,6 +31,8 @@ class Settings(BaseSettings):
     clinic_name: str = "Dental Clinic"
     clinic_address: str = ""
     dentist_name: str = ""
+    auth_required: bool = True
+    max_accounts: int = 100
 
     @property
     def storage_path(self) -> Path:

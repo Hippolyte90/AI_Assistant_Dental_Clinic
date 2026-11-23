@@ -76,7 +76,7 @@ def fake_llm():
 def client(tmp_path, fake_llm):
     from app.main import create_app
 
-    settings = Settings(storage_dir=tmp_path, _env_file=None)
+    settings = Settings(storage_dir=tmp_path, auth_required=False, _env_file=None)
     return TestClient(create_app(settings, fake_llm, FakeTranscriber()))
 
 

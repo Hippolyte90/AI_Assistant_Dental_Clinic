@@ -3,10 +3,11 @@
 from pathlib import Path
 
 from fastapi import APIRouter, File, Request, UploadFile
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from pydantic import BaseModel, Field
 
-from app.models.schemas import Answer, Session, Transcript, TreatmentPlan
+from app.models.schemas import Answer, Session, SessionSummary, Transcript, TreatmentPlan
+from app.services.pdf import count_pages, render_page_png
 from app.services.workflow import Workflow, WorkflowError
 from app.store import PlanNotFound
 
@@ -45,10 +46,21 @@ def workflow(request: Request) -> Workflow:
     return request.app.state.workflow
 
 
+def owner(request: Request) -> str:
+    """Id of the signed-in user ('' when accounts are disabled)."""
+    return getattr(request.state, "user_id", "")
+
+
+@router.get("/sessions")
+def list_sessions(request: Request) -> list[SessionSummary]:
+    """The signed-in user's plans."""
+    return workflow(request).store.list_summaries(owner(request))
+
+
 @router.post("/sessions")
 def create_session(body: SessionCreate, request: Request) -> Session:
     """Create a session."""
-    return workflow(request).store.create(body.patient_label.strip())
+    return workflow(request).store.create(body.patient_label.strip(), owner(request))
 
 
 @router.get("/sessions/{session_id}")
@@ -89,7 +101,8 @@ def build_plan(session_id: str, request: Request) -> dict:
     """Start building a plan; poll /jobs/{id}."""
     flow = workflow(request)
     flow.store.load(session_id)
-    return {"job_id": flow.submit(lambda progress: flow.build(session_id, progress))}
+    job_id = flow.submit(lambda progress: flow.build(session_id, progress), owner(request))
+    return {"job_id": job_id}
 
 
 @router.post("/sessions/{session_id}/revise", status_code=202)
@@ -98,7 +111,8 @@ def revise_plan(session_id: str, body: ReviseRequest, request: Request) -> dict:
     flow = workflow(request)
     flow.store.load(session_id)
     job_id = flow.submit(
-        lambda progress: flow.revise(session_id, body.answers, body.corrections, progress)
+        lambda progress: flow.revise(session_id, body.answers, body.corrections, progress),
+        owner(request),
     )
     return {"job_id": job_id}
 
@@ -135,12 +149,36 @@ def get_pdf(session_id: str, version: int, request: Request) -> FileResponse:
     )
 
 
+@router.get("/sessions/{session_id}/plans/{version}/pdf/pages")
+def get_pdf_page_count(session_id: str, version: int, request: Request) -> dict:
+    """Number of pages available for the on-screen preview."""
+    path = workflow(request).store.pdf_path(session_id, version)
+    if not path.exists():
+        raise PlanNotFound(version)
+    return {"pages": count_pages(path)}
+
+
+@router.get("/sessions/{session_id}/plans/{version}/pdf/pages/{page}")
+def get_pdf_page(session_id: str, version: int, page: int, request: Request) -> Response:
+    """One PDF page as an image, for the on-screen preview."""
+    path = workflow(request).store.pdf_path(session_id, version)
+    if not path.exists():
+        raise PlanNotFound(version)
+    image = render_page_png(path, page)
+    if image is None:
+        raise PlanNotFound(page)
+    return Response(
+        image, media_type="image/png", headers={"Cache-Control": "private, max-age=3600"}
+    )
+
+
 @router.get("/jobs/{job_id}")
 def get_job(job_id: str, request: Request) -> dict:
     """Progress of a background job."""
     job = workflow(request).job(job_id)
     if job is None:
         raise PlanNotFound(job_id)
+    job.pop("owner_id", None)
     return job
 
 

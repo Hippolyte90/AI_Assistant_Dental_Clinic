@@ -12,6 +12,8 @@ openpyxl
 reportlab
 pyyaml
 pypdf
+pypdfium2
+pillow
 pytest
 httpx
 ruff

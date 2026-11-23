@@ -1,12 +1,16 @@
 """JSON-file storage for sessions and plan versions."""
 
+import logging
 import os
 import shutil
 import tempfile
 import uuid
 from pathlib import Path
 
-from app.models.schemas import Session, TreatmentPlan
+from app.models.schemas import Session, SessionSummary, TreatmentPlan
+
+logger = logging.getLogger(__name__)
+PREVIEW_LENGTH = 110
 
 
 class SessionNotFound(KeyError):
@@ -42,11 +46,54 @@ class Store:
             stream.write(text)
         os.replace(temp, path)
 
-    def create(self, patient_label: str = "") -> Session:
+    def create(self, patient_label: str = "", owner_id: str = "") -> Session:
         """Create a new session."""
-        session = Session(id=uuid.uuid4().hex, patient_label=patient_label)
+        session = Session(id=uuid.uuid4().hex, owner_id=owner_id, patient_label=patient_label)
         self.save(session)
         return session
+
+    def owned_by(self, session_id: str, owner_id: str) -> bool:
+        """True if this session exists and belongs to this user."""
+        try:
+            return self.load(session_id).owner_id == owner_id
+        except SessionNotFound:
+            return False
+
+    def list_summaries(self, owner_id: str) -> list[SessionSummary]:
+        """This user's plans and started notes, most recently updated first."""
+        summaries: list[SessionSummary] = []
+        for path in self.root.glob("*/session.json"):
+            try:
+                session = Session.model_validate_json(path.read_text(encoding="utf-8"))
+                if session.owner_id != owner_id:
+                    continue
+                version = session.current_version
+                plan = self.load_plan(session.id, version) if version else None
+            except (ValueError, OSError, PlanNotFound):
+                logger.warning("Skipping an unreadable session folder: %s", path.parent.name)
+                continue
+            notes = " ".join(session.transcript.split())
+            if plan is None and not notes:
+                continue
+            preview = notes
+            if len(notes) > PREVIEW_LENGTH:
+                preview = notes[:PREVIEW_LENGTH].rstrip() + "…"
+            summaries.append(
+                SessionSummary(
+                    id=session.id,
+                    patient_label=session.patient_label,
+                    state=session.state,
+                    status=plan.status if plan else None,
+                    current_version=version,
+                    total_eur=plan.total_eur if plan else None,
+                    stage_count=len(plan.stages) if plan else 0,
+                    preview=preview,
+                    created_at=session.created_at,
+                    updated_at=plan.created_at if plan else session.created_at,
+                )
+            )
+        summaries.sort(key=lambda item: item.updated_at, reverse=True)
+        return summaries
 
     def save(self, session: Session) -> None:
         """Persist a session atomically."""

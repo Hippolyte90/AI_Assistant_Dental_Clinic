@@ -31,6 +31,7 @@ Claude Code reads [CLAUDE.md](CLAUDE.md), which has the same rules. **If you cha
 - Test notes in `data/sample_notes/` are **synthetic practice notes** (SPEC T0.2) and must stay labelled `SYNTHETIC PRACTICE NOTE`. Never present them as real instructor or patient data.
 - Procedure families, question wording and diagnosis terms live in `backend/app/rules/families.yaml`. Whisper files stay in `storage/models/`; PyAV is pinned below 16.
 - Default intervals in `clinic_rules.yaml` are shown as assumptions until a dentist fills in `validated_by`.
+- The public link (`https://cuspia.dmb-site.site`) requires user accounts (`AUTH_REQUIRED=true`). Never start the tunnel with accounts off, never store a password in clear, never bind the app to `0.0.0.0`, and use synthetic notes only.
 - **Local only:** never add calls to cloud AI/LLM/STT services (OpenAI, Anthropic, Google, …). The LLM goes through the `LLMClient` interface (`backend/app/services/llm.py`), implemented with the `ollama` Python package.
 - Ollama calls always set `think=False`, `format=<schema>`, `temperature=0` and an explicit `num_ctx` (8192) (the default context silently truncates). Validate the output with Pydantic and retry on failure.
 - Keep the pipeline extract → match (code) → map → revise. Don't send the whole 208-item catalog to the model in one prompt.
@@ -53,5 +54,6 @@ The repo path contains spaces, so quote it.
 ## Conventions
 
 - Python: type hints, Pydantic v2, `pathlib`, services free of FastAPI imports, thin routes, prompts in `backend/app/prompts/*.md`, clinic rules in `backend/app/rules/clinic_rules.yaml`.
+- **The interface never mentions the AI model, Ollama, Whisper or local processing**, including in error messages. Technical details go to the server log.
 - TypeScript: function components + hooks, API client in `frontend/src/api/client.ts`, shared types in `frontend/src/types.ts`.
 - Add or adjust tests with every change to catalog parsing, pricing, or plan revision.

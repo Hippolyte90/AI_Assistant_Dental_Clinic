@@ -1,9 +1,11 @@
 """Renders a treatment plan to PDF with ReportLab."""
 
 from decimal import Decimal
+from io import BytesIO
 from pathlib import Path
 from xml.sax.saxutils import escape
 
+import pypdfium2
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_RIGHT
 from reportlab.lib.pagesizes import A4
@@ -326,3 +328,26 @@ def _box(title: str, text: str, styles: dict, width: float) -> KeepTogether:
         )
     )
     return KeepTogether([table])
+
+
+def count_pages(path: Path) -> int:
+    """Number of pages in a PDF."""
+    document = pypdfium2.PdfDocument(path)
+    try:
+        return len(document)
+    finally:
+        document.close()
+
+
+def render_page_png(path: Path, page: int, scale: float = 2.0) -> bytes | None:
+    """Render one 1-indexed page as PNG, or return None if it does not exist."""
+    document = pypdfium2.PdfDocument(path)
+    try:
+        if not 1 <= page <= len(document):
+            return None
+        image = document[page - 1].render(scale=scale).to_pil()
+        buffer = BytesIO()
+        image.save(buffer, format="PNG", optimize=True)
+        return buffer.getvalue()
+    finally:
+        document.close()
