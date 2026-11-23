@@ -1,0 +1,14 @@
+# Dentist wording -> catalog wording, used before fuzzy matching.
+synonyms:
+  rct: root canal treatment
+  endo: root canal treatment
+  filling: restoration
+  cleaning: professional hygiene
+  x-ray: dental radiograph
+  xray: dental radiograph
+  x ray: dental radiograph
+  anesthesia: anaesthesia
+  anesthetic: anaesthetic
+  frenulectomy: frenectomy
+  gum graft: gingival grafting
+  korean implant: osstem implant placement

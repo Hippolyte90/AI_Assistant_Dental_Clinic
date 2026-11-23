@@ -63,9 +63,9 @@ cd frontend && npm install && npm run dev                                 # http
 ## Local LLM usage (in `backend/app/services/llm.py`)
 
 - Runtime: **Ollama** through the official `ollama` Python package, behind the `LLMClient` interface (`generate_json(system, user, schema)`). Default model **`qwen3:4b`**, configurable through `LLM_MODEL`.
-- Hardware is a **Ryzen 5 5500U CPU, 14 GB RAM, integrated Radeon only**: ~9 tok/s generation, so 2–4 min per plan. Every prompt and output token counts: keep prompts short and push deterministic work into code.
+- Hardware is a **Ryzen 5 5500U CPU, 14 GB RAM, integrated Radeon only**: ~9 tok/s generation, about 20–50 s per plan. Every prompt and output token counts: keep prompts short and push deterministic work into code.
 - Always pass **`think=False`** (qwen3 otherwise reasons for minutes), `format=<Pydantic>.model_json_schema()`, `temperature=0`, and an **explicit `num_ctx`** (default 8192) (Ollama's default context silently truncates long prompts). Validate with Pydantic and retry up to 2 times with the error added to the prompt.
-- Small models need help. Keep the pipeline **extract → match (code) → map → revise** (ARCHITECTURE §7). Don't put the full 209-item catalog in one prompt. Keep prompts short, with few-shot examples.
+- Small models need help. Keep the pipeline **extract → match (code) → map → revise** (ARCHITECTURE §7). Don't put the full 208-item catalog in one prompt. Keep prompts short, with few-shot examples.
 - Unit tests must mock `LLMClient`; they must not need Ollama running.
 - Model comparisons (T7.2) are slow. Run them only when asked.
 
@@ -74,5 +74,7 @@ cd frontend && npm install && npm run dev                                 # http
 - Read the price list from the **xlsx**. The PDF truncates long names.
 - The same service name can appear in several sections with different prices ("Local anaesthesia", "Single-use hygiene kit", …). Pick by section context.
 - The path contains spaces (`Master2  Info`, two spaces), so always quote paths.
-- `Dental_Price_List_EUR.xlsx` holds the price list only (1 sheet, 209 services, 8 sections). The instructor's sample notes were never received, so we use **synthetic practice notes** (SPEC T0.2) in `data/sample_notes/`. Each one must start with `SYNTHETIC PRACTICE NOTE`. Never present them as real instructor or patient data.
+- `Dental_Price_List_EUR.xlsx` holds the price list only (1 sheet, 208 services, 8 sections). The instructor's sample notes were never received, so we use **synthetic practice notes** (SPEC T0.2) in `data/sample_notes/`. Each one must start with `SYNTHETIC PRACTICE NOTE`. Never present them as real instructor or patient data.
+- This machine's `HF_HOME` points to a missing `E:\` drive, so `stt.py` keeps Whisper files in `storage/models/`. PyAV is pinned below 16 because newer versions break faster-whisper 1.2.1.
+- Procedure families, question wording and diagnosis terms live in `backend/app/rules/families.yaml`.
 - Default intervals in `clinic_rules.yaml` are developer-written clinical assumptions. Show them as assumptions until `validated_by` is filled in by a dentist.

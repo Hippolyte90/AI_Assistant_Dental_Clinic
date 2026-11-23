@@ -48,7 +48,7 @@
 | Backend | **FastAPI** + Uvicorn, Python 3.12 (conda env in `.venv/`) | Async, typed with Pydantic, auto OpenAPI docs at `/docs` |
 | Validation / schemas | **Pydantic v2** | Same models for API, LLM structured output, and storage |
 | LLM | **Local LLM via Ollama** (`ollama` Python package), default `qwen3:4b` with `think=False`, configurable | Fully offline and private, free to run, easy install on Windows, JSON-schema constrained output (`format=`) |
-| Catalog matching | **rapidfuzz** + `synonyms.yaml` | Gives the small local model a short candidate list instead of 209 items |
+| Catalog matching | **rapidfuzz** + `synonyms.yaml` | Gives the small local model a short candidate list instead of 208 items |
 | Speech-to-text | **faster-whisper** (local, CPU `small` by default) | Patient audio stays on the clinic machine; language fixed to English; no system ffmpeg needed (PyAV bundled) |
 | PDF | **ReportLab** | Pure Python, reliable on Windows (WeasyPrint needs GTK) |
 | Price list | **openpyxl** reads `.xlsx` | The PDF version truncates long service names |
@@ -121,7 +121,9 @@ AI_Assistant_Dental_Clinic/
 │   │   │   ├── stt.py                # Transcriber interface + WhisperTranscriber
 │   │   │   ├── llm.py                # LLMClient interface + OllamaClient (JSON schema, validation retries)
 │   │   │   ├── matcher.py            # rapidfuzz + synonyms → top-5 catalog candidates
-│   │   │   ├── planner.py            # build / revise orchestration, versioning, diff
+│   │   │   ├── planner.py            # build / revise, stages, questions, diff
+│   │   │   ├── workflow.py           # session operations + background jobs
+│   │   │   ├── rules.py              # loads the YAML rules
 │   │   │   ├── catalog.py
 │   │   │   ├── pricing.py
 │   │   │   └── pdf.py
@@ -131,7 +133,8 @@ AI_Assistant_Dental_Clinic/
 │   │   │   └── revise_plan.md
 │   │   └── rules/
 │   │       ├── clinic_rules.yaml     # default intervals, auto-add rules
-│   │       └── synonyms.yaml         # dentist wording → catalog wording
+│   │       ├── synonyms.yaml         # dentist wording → catalog wording
+│   │       └── families.yaml         # procedure families, choices and question texts
 │   ├── scripts/
 │   │   ├── build_catalog.py          # xlsx → data/catalog.json
 │   │   └── eval_samples.py           # T7.2 (runs the local model; slow, on demand)
@@ -162,8 +165,9 @@ All routes are prefixed with `/api`. JSON unless stated.
 | GET | `/sessions/{id}` | – | `Session` (state, transcript, latest version) |
 | POST | `/sessions/{id}/audio` | multipart `file` | `Transcript` |
 | PUT | `/sessions/{id}/transcript` | `{text}` | `Transcript` |
-| POST | `/sessions/{id}/plan` | – | `TreatmentPlan` (v1) |
-| POST | `/sessions/{id}/revise` | `{answers[], corrections?}` | `{plan: TreatmentPlan, diff: PlanDiff}` |
+| POST | `/sessions/{id}/plan` | – | `{job_id}` (202); result via `/jobs/{id}` |
+| POST | `/sessions/{id}/revise` | `{answers[], corrections?}` | `{job_id}` (202); result `{plan, diff}` via `/jobs/{id}` |
+| GET | `/jobs/{id}` | – | `{status, step, result?, error?}` |
 | POST | `/sessions/{id}/confirm` | `{accept_defaults: bool}` | `TreatmentPlan` (FINAL) |
 | GET | `/sessions/{id}/plans` | – | list of versions |
 | GET | `/sessions/{id}/plans/{n}` | – | `TreatmentPlan` |
@@ -262,10 +266,10 @@ storage/sessions/{session_id}/
 
 - **Runtime:** Ollama on `OLLAMA_HOST` (default `http://127.0.0.1:11434`), official `ollama` Python package.
 - **Target hardware:** AMD Ryzen 5 5500U, 13.8 GB RAM, integrated Radeon (Vega) with no dedicated GPU, so **CPU inference**. Ollama sees the iGPU through Vulkan but skips it unless `OLLAMA_IGPU_ENABLE=1` (optional test, SPEC T0.5).
-- **Model:** `LLM_MODEL`, default **`qwen3:4b`** (2.5 GB, good at JSON and English instructions). Measured on the target CPU: ~8.9 tok/s generation, ~35 tok/s prompt reading, so **2–4 min per plan**. **Thinking must be disabled** (`think=False`); with thinking on, qwen3 reasons for minutes. Fallbacks for T7.2: `qwen3:1.7b`, `llama3.2:3b`, `qwen2.5:3b-instruct`. 7B+ models only on a stronger machine.
+- **Model:** `LLM_MODEL`, default **`qwen3:4b`** (2.5 GB, good at JSON and English instructions). Measured on the target CPU: ~8.9 tok/s generation, ~35 tok/s prompt reading, so about **20–50 s per plan** on the practice notes. **Thinking must be disabled** (`think=False`); with thinking on, qwen3 reasons for minutes. Fallbacks for T7.2: `qwen3:1.7b`, `llama3.2:3b`, `qwen2.5:3b-instruct`. 7B+ models only on a stronger machine.
 - **Speed budget on this CPU:** every prompt token costs ~30 ms and every output token ~110 ms. So keep system prompts short, send only the shortlisted candidates (never the whole catalog), keep JSON keys short, and let code do everything deterministic (matching, pricing, applying clicked answers).
 - **Abstraction:** `LLMClient.generate_json(system, user, schema)`. `OllamaClient` is the only implementation for now. An OpenAI-compatible local server (LM Studio, llama.cpp, vLLM) can be added as a second implementation later.
-- **Why two steps instead of one big prompt:** 7–8B models lose accuracy when asked to read a long transcript *and* choose among 209 items at once. So the work is split:
+- **Why two steps instead of one big prompt:** 7–8B models lose accuracy when asked to read a long transcript *and* choose among 208 items at once. So the work is split:
   1. **Step A – Extract** (`extract_procedures.md`): transcript → `procedures[]` = `{said: "root canal", teeth: [36], quantity, stage_hint, interval_hint, options_mentioned}`. No catalog in the prompt.
   2. **Matcher (code, no LLM):** `matcher.py` turns each procedure into the top 5 catalog candidates (rapidfuzz + `synonyms.yaml` + tooth-type filter from the FDI number). A clear winner is auto-selected.
   3. **Step B – Map** (`map_to_catalog.md`): for the remaining procedures, the LLM picks one candidate id or marks it ambiguous. It also groups items into stages, sets intervals, and writes the questions. Output: `PlanDraft`.
@@ -275,8 +279,21 @@ storage/sessions/{session_id}/
 - **Prompt style for small models:** short, numbered rules, 1–2 worked examples (few-shot), the output schema described in plain words, and an explicit instruction to write every text field in plain English.
 - **Hard rules in the prompts:** only candidate catalog ids; never invent services; never output prices; FDI tooth numbers; ask instead of guessing when price-relevant; keep the dentist's wording in `note`.
 - **Post-validation in code** (`pricing.py`): unknown ids → question; impossible teeth → question; empty stages removed.
-- **Latency:** about 2–4 min per plan on the target CPU. The backend runs plan building as a background job and the UI polls or streams per-step progress (extract → match → map → PDF). The model is kept loaded (`keep_alive`) to skip the ~6 s load. Log duration and `prompt_eval_count` / `eval_count` per call.
+- **Latency:** about 20–50 s per plan on the target CPU. The backend runs plan building as a background job and the UI polls or streams per-step progress (extract → match → map → PDF). The model is kept loaded (`keep_alive`) to skip the ~6 s load. Log duration and `prompt_eval_count` / `eval_count` per call.
 - **Privacy:** fully local, so no transcript, audio or plan leaves the machine. Patient *label* only, no full identity in prompts or logs.
+
+---
+
+### As built (2026-11-23)
+
+The implementation moves more work from the LLM into code than the first design:
+
+1. **Step A (LLM)** extracts procedures.
+2. **Grounding (code, `Matcher.ground`)** checks them against the dictated sentences: drops diagnoses, merges fragments, removes delays that are not in the procedure's sentence, and recovers clearly dictated procedures the model missed (never negated or past ones).
+3. **Families (code, `families.yaml`)** map known procedures to catalog items and detect what is missing (brand, crown type, surfaces, grade…). Each missing value becomes a question with a provisional default and a computed price difference.
+4. **Step B (LLM)** runs only for procedures outside the families, and may only pick from their shortlist.
+5. **Stages, intervals and questions are built by code.** A plan is always rebuilt from `PlanState`, so clicked answers need no LLM call.
+6. **Revise (LLM)** runs only for free-text corrections and returns add / remove / change operations.
 
 ---
 
@@ -321,8 +338,11 @@ header (clinic, dentist, patient label, date, version, status) → summary box (
 | 2026-11-16 | Fixed workflow (extract → match → map → revise), no agent loop | Predictable, easy to test |
 | 2026-11-16 | Internal catalog `id` instead of clinic code | Codes are missing/duplicated in the price list |
 | 2026-11-16 | **Local LLM (Ollama) instead of a cloud LLM API** | Project requirement: everything local, private, no API cost |
-| 2026-11-16 | Two-step LLM + fuzzy matcher instead of full catalog in one prompt | Small local models are less accurate with 209 options and long prompts |
+| 2026-11-16 | Two-step LLM + fuzzy matcher instead of full catalog in one prompt | Small local models are less accurate with 208 options and long prompts |
 | 2026-11-16 | JSON files instead of SQLite | Simpler; one clinic, few sessions; files are easy to inspect |
 | 2026-11-16 | English only (STT `language="en"`, prompts, UI, PDF) | Project requirement; faster and more accurate STT |
 | 2026-11-16 | Default intervals in `clinic_rules.yaml` shown as assumptions until a dentist validates them | They are clinical judgements written by developers |
+| 2026-11-23 | Stages, questions and known mappings built by code (`families.yaml`), LLM limited to extraction, shortlist choice and corrections | More reliable and faster with a 4B model; measured on the practice notes |
+| 2026-11-23 | Extraction is grounded against the transcript | The model listed diagnoses, misplaced delays and sometimes skipped a sentence |
+| 2026-11-23 | Whisper model stored in `storage/models/`; PyAV pinned below 16 | This machine's `HF_HOME` points to a missing drive; PyAV 19 breaks faster-whisper 1.2.1 |
 | 2026-11-16 | Default model `qwen3:4b`, thinking off, CPU | Target is a Ryzen 5 5500U with 14 GB RAM and only an iGPU; measured 8.9 tok/s, output correct |

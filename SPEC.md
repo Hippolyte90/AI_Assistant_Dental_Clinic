@@ -25,17 +25,17 @@ The dentist **dictates** the work to be done for a patient. The assistant:
 
 | # | Criterion | Covered by tasks | Status |
 |---|-----------|------------------|--------|
-| AC1 | Understands voice | T2.1 – T2.4 | ⬜ |
-| AC2 | Generates a PDF | T3.1 – T3.6, T4.1 – T4.3 | ⬜ |
-| AC3 | Asks clarifying questions | T5.1 – T5.2 | ⬜ |
-| AC4 | Regenerates the PDF (with answers + corrections, then confirmation) | T6.1, T6.3 | ⬜ |
+| AC1 | Understands voice | T2.1 – T2.4 | ✅ |
+| AC2 | Generates a PDF | T3.1 – T3.6, T4.1 – T4.3 | ✅ |
+| AC3 | Asks clarifying questions | T5.1 – T5.2 | ✅ |
+| AC4 | Regenerates the PDF (with answers + corrections, then confirmation) | T6.1, T6.3 | ✅ |
 
 ### Inputs
 
 | Input | Location | Status |
 |-------|----------|--------|
-| Clinic price list (EUR) | `Dental_Price_List_EUR.xlsx` / `.pdf` (repo root → moved to `data/price_list/` in T0.3). 1 sheet, columns Service/Code/Price, 8 sections, 209 services | ✅ received |
-| Sample dentist notes | Not received from the instructor. **Decision (2026-11-16): work with what we have.** We write our own *synthetic practice notes* (T0.2) and replace or extend them if real notes arrive | ⬜ to write (T0.2) |
+| Clinic price list (EUR) | `Dental_Price_List_EUR.xlsx` / `.pdf` (repo root → moved to `data/price_list/` in T0.3). 1 sheet, columns Service/Code/Price, 8 sections, 208 services | ✅ received |
+| Sample dentist notes | Not received from the instructor. **Decision (2026-11-16): work with what we have.** We write our own *synthetic practice notes* (T0.2) and replace or extend them if real notes arrive | ✅ 4 synthetic notes written (T0.2) |
 | Challenge brief screenshot | `Screenshot 2026-11-16 at 3.53.44 PM.png` | ✅ received |
 
 ### Out of scope
@@ -54,17 +54,25 @@ Tasks marked **(optional)** are nice-to-have: do them only after all required ta
 
 | Phase | Name | Tasks (required + optional) | Done | Status |
 |-------|------|-----------------------------|------|--------|
-| 0 | Project setup | 6 | 1 (+T0.5 🟡) | 🟡 |
-| 1 | Price catalog | 2 + 1 optional | 0 | ⬜ |
-| 2 | Voice input (speech-to-text) | 4 | 0 | ⬜ |
-| 3 | Treatment-plan builder (rules + matching + pricing + local LLM) | 6 | 0 | ⬜ |
-| 4 | PDF generation | 3 | 0 | ⬜ |
-| 5 | Clarifying questions | 2 + 1 optional | 0 | ⬜ |
-| 6 | Revision, regeneration & confirmation | 2 + 1 optional | 0 | ⬜ |
-| 7 | Quality, tests & demo | 4 | 0 | ⬜ |
-| 8 | Stretch goals | 4 optional | 0 | ⬜ |
+| 0 | Project setup | 6 | 5 (T0.3 waits for a commit) | 🟡 |
+| 1 | Price catalog | 2 + 1 optional | 3 | ✅ |
+| 2 | Voice input (speech-to-text) | 4 | 4 | ✅ |
+| 3 | Treatment-plan builder (rules + matching + pricing + local LLM) | 6 | 6 | ✅ |
+| 4 | PDF generation | 3 | 3 | ✅ |
+| 5 | Clarifying questions | 2 + 1 optional | 3 | ✅ |
+| 6 | Revision, regeneration & confirmation | 2 + 1 optional | 3 | ✅ |
+| 7 | Quality, tests & demo | 4 | 3 (T7.4 needs a classmate) | 🟡 |
+| 8 | Stretch goals | 4 optional | 0 | ⬜ not started |
 
-**Next task to pick up:** T0.2 (write the synthetic practice notes), then T0.3.
+### Remaining actions (status checked 2026-11-23)
+
+| # | Action | Who | How | Done when | Closes | Status |
+|---|--------|-----|-----|-----------|--------|--------|
+| A1 | Commit the work | Project owner, or an agent when asked | Review `git status`, then commit. `storage/`, `.env` and `node_modules/` are already ignored | `git status` is clean and the last commit contains `backend/`, `frontend/` and `data/` | T0.3 | ⬜ Not done: all work since `4655dc7` is uncommitted |
+| A2 | Test with a real voice | Project owner | Start the app, click **Start dictation**, read `data/sample_notes/note_01.txt` aloud (without its first line), then build the plan | Brands, tooth numbers and procedure names are transcribed correctly, or corrected in the text box, and the total is **975.76 €** | Open item in §4 | ⬜ Not done: only Windows TTS with a simulated microphone was tested |
+| A3 | Have a classmate follow the README | A classmate | Follow [README.md](README.md) on another computer, without help, through the 3-minute demo. Record any blocked step here | The app runs and the demo reaches the final PDF | T7.4 | ⬜ Not done |
+
+Also needed before any use on real patients: a dentist reviews `backend/app/rules/clinic_rules.yaml` and fills in `validated_by` and `validated_on`. Phase 8 is optional.
 
 ---
 
@@ -81,7 +89,7 @@ Each task has: **Goal**, **Steps**, **Done when** (acceptance test), **Status**.
 - **Goal:** Write `SPEC.md`, `ARCHITECTURE.md`, `CLAUDE.md`, `AGENTS.md`.
 - **Done when:** The four files exist at the repo root and are committed.
 
-#### T0.2 Synthetic practice notes — ⬜ Todo
+#### T0.2 Synthetic practice notes — ✅ Done (2026-11-23)
 - **Goal:** Have realistic test dictations now, without waiting for the instructor's samples.
 - **Steps:**
   1. Write 4 English dictations in a dentist's spoken style, each using real services from the price list, saved as `data/sample_notes/note_01.txt` … `note_04.txt`. Start every file with the line `SYNTHETIC PRACTICE NOTE – not from the instructor`. Cover:
@@ -94,7 +102,7 @@ Each task has: **Goal**, **Steps**, **Done when** (acceptance test), **Status**.
   4. If the instructor's real notes arrive later, add them as `note_1X.txt` and keep the synthetic ones.
 - **Done when:** 4 notes and 4 expected plans exist in `data/sample_notes/`, each note clearly labelled synthetic.
 
-#### T0.3 Repository skeleton — ⬜ Todo
+#### T0.3 Repository skeleton — 🟡 Tree done; the "clean after commit" check waits for your commit
 - **Steps:**
   1. Create the folders described in [ARCHITECTURE.md §4](ARCHITECTURE.md#4-repository-layout): `backend/`, `frontend/`, `data/`, `docs/`, `storage/` (git-ignored).
   2. Move `Dental_Price_List_EUR.xlsx` and `.pdf` to `data/price_list/` with `git mv`.
@@ -102,7 +110,7 @@ Each task has: **Goal**, **Steps**, **Done when** (acceptance test), **Status**.
   4. Add `storage/` to `.gitignore`. Check `.env` is already ignored (it is).
 - **Done when:** The tree matches ARCHITECTURE §4 and `git status` is clean after the commit.
 
-#### T0.4 Backend scaffold & configuration — ⬜ Todo
+#### T0.4 Backend scaffold & configuration — ✅ Done (2026-11-23)
 - **Steps:**
   1. `backend/requirements.txt`: `fastapi`, `uvicorn[standard]`, `pydantic>=2`, `pydantic-settings`, `python-multipart`, `ollama`, `rapidfuzz`, `faster-whisper`, `openpyxl`, `reportlab`, `pyyaml`, `pytest`, `httpx`, `ruff`.
   2. Install into the existing conda env: `.venv/python.exe -m pip install -r backend/requirements.txt`.
@@ -111,19 +119,19 @@ Each task has: **Goal**, **Steps**, **Done when** (acceptance test), **Status**.
   5. `backend/app/main.py`: FastAPI app, CORS for `http://localhost:5173`, `GET /api/health`.
 - **Done when:** `.venv/python.exe -m uvicorn app.main:app --reload --app-dir backend` starts and `GET /api/health` returns `{"status":"ok"}`.
 
-#### T0.5 Local LLM runtime (Ollama) — 🟡 In progress (steps 1–3 done 2026-11-16; step 4 needs T0.4, step 5 optional)
+#### T0.5 Local LLM runtime (Ollama) — ✅ Done (2026-11-23; optional step 5 not done)
 - **Machine (recorded 2026-11-16):** AMD Ryzen 5 5500U (6 cores / 12 threads), 13.8 GB RAM, integrated AMD Radeon (Vega, 2 GB shared memory). No dedicated GPU, so inference runs on the CPU.
 - **Steps:**
   1. ✅ Ollama for Windows installed (v0.40.15, an update to 0.40.16 is pending).
   2. ✅ Model `qwen3:4b` (2.5 GB) pulled. It is the **default** model.
   3. ✅ Benchmark via the API (`think=false`, `format=json`, `temperature=0`): procedure extraction from a 1-sentence dictation was **correct**. Load 5.6 s, prompt ~35 tok/s, generation ~8.9 tok/s.
      - ⚠️ qwen3 "thinking" mode must be **off** (`think=False` in the API). With thinking on, the model loops for minutes. The CLI flag `--think=false` did not prevent it in our test, so always use the API parameter.
-  4. ⬜ `GET /api/health` also reports whether Ollama is reachable and the configured model is pulled (`ollama.list()`).
+  4. ✅ `GET /api/health` also reports whether Ollama is reachable and the configured model is pulled (`ollama.list()`).
   5. ⬜ *(optional)* Ollama detects the Radeon iGPU through Vulkan but ignores it by default. Set the user environment variable `OLLAMA_IGPU_ENABLE=1`, restart Ollama, re-run the benchmark, and keep it only if it is faster and stable.
   - Alternative models for T7.2: `qwen3:1.7b`, `llama3.2:3b`, `qwen2.5:3b-instruct`.
-- **Done when:** the benchmark answers correctly (✅) and `/api/health` shows `llm: ok` (⬜).
+- **Done when:** the benchmark answers correctly (✅) and `/api/health` shows `llm: ok` (✅).
 
-#### T0.6 Frontend scaffold — ⬜ Todo (can run in parallel with T0.4 / T0.5)
+#### T0.6 Frontend scaffold — ✅ Done (2026-11-23)
 - **Steps:**
   1. `npm create vite@latest frontend -- --template react-ts`.
   2. Add Tailwind CSS (or plain CSS modules, keep it simple).
@@ -135,7 +143,7 @@ Each task has: **Goal**, **Steps**, **Done when** (acceptance test), **Status**.
 
 ### Phase 1 — Price catalog
 
-#### T1.1 Parse the price list into a catalog — ⬜ Todo
+#### T1.1 Parse the price list into a catalog — ✅ Done (2026-11-23)
 - **Goal:** Turn `Dental_Price_List_EUR.xlsx` into a clean, machine-usable catalog.
 - **Steps:**
   1. `backend/app/services/catalog.py`: read the xlsx with `openpyxl` (use the **xlsx**, not the PDF; the PDF cuts off long names).
@@ -143,9 +151,9 @@ Each task has: **Goal**, **Steps**, **Done when** (acceptance test), **Status**.
   3. For each service row build a `CatalogItem`: `id` (stable slug, e.g. `endo-018`, section prefix + row index), `code` (may be `None`), `section`, `name`, `price_eur` (Decimal).
   4. `backend/scripts/build_catalog.py` writes `data/catalog.json` (generated, committed so it can be reviewed).
   5. Fill in the catalog ids in the `data/sample_notes/*.expected.json` files from T0.2.
-- **Done when:** A unit test loads the catalog and checks: exactly 209 items in 8 sections (sheet "Price list (EUR)", range A1:C217); "Root canal treatment — molars" = 109.51 €; "Osstem implant placement (Korea)" exists in Implantology; every item has a section and a price > 0.
+- **Done when:** A unit test loads the catalog and checks: exactly 208 items in 8 sections (sheet "Price list (EUR)", range A1:C217); "Root canal treatment — molars" = 89.60 €; "Osstem implant placement (Korea)" exists in Implantology; every item has a section and a price > 0.
 
-#### T1.2 Data quality handling — ⬜ Todo
+#### T1.2 Data quality handling — ✅ Done (2026-11-23)
 - **Known issues in the source file** (handle them, do not silently "fix" prices):
   - Many rows have **no code**, so the internal `id` is the key, never the code.
   - **Duplicate codes** with different prices (e.g. `6.22` → 51.37 and 50.97).
@@ -157,7 +165,7 @@ Each task has: **Goal**, **Steps**, **Done when** (acceptance test), **Status**.
   2. *(optional)* Generate `data/catalog_report.md` listing every anomaly.
 - **Done when:** Tests cover the duplicate-code and same-name-different-section cases.
 
-#### T1.3 Catalog API — ⬜ Todo (optional)
+#### T1.3 Catalog API — ✅ Done (2026-11-23) (optional)
 - **Steps:** `GET /api/catalog` (full list, grouped by section) and `GET /api/catalog/search?q=` (fuzzy match with `rapidfuzz`).
 - **Done when:** `GET /api/catalog/search?q=straumann` returns the Straumann items.
 
@@ -165,30 +173,30 @@ Each task has: **Goal**, **Steps**, **Done when** (acceptance test), **Status**.
 
 ### Phase 2 — Voice input (AC1)
 
-#### T2.1 Browser audio recorder — ⬜ Todo
+#### T2.1 Browser audio recorder — ✅ Done (2026-11-23)
 - **Steps:**
   1. React component `<Recorder>` using `navigator.mediaDevices.getUserMedia` + `MediaRecorder` (`audio/webm;codecs=opus`).
   2. Big Record / Stop button, timer, level indicator, "re-record".
   3. Show an error message if microphone permission is denied.
 - **Done when:** You can record and play back a 30 s clip in the browser.
 
-#### T2.2 Audio upload endpoint — ⬜ Todo
+#### T2.2 Audio upload endpoint — ✅ Done (2026-11-23)
 - **Steps:**
   1. `POST /api/sessions`: create a session (patient label optional) → `{session_id}`. The session is saved as `storage/sessions/{session_id}/session.json`.
   2. `POST /api/sessions/{id}/audio` (multipart): save to `storage/sessions/{session_id}/audio/{n}.webm`, call STT (T2.3), store the transcript in the session, return it.
   3. Limit size (e.g. 25 MB) and duration (e.g. 10 min).
 - **Done when:** Uploading a clip returns a transcript JSON `{text, segments}`.
 
-#### T2.3 Speech-to-text service — ⬜ Todo
+#### T2.3 Speech-to-text service — ✅ Done (2026-11-23)
 - **Steps:**
   1. `backend/app/services/stt.py` behind an interface `Transcriber.transcribe(path) -> Transcript`.
-  2. Default implementation: **faster-whisper** (local, so patient audio never leaves the machine), CPU with `compute_type="int8"`, model from config (`small`; `base` if `small` is too slow).
+  2. Default implementation: **faster-whisper** (local, so patient audio never leaves the machine), CPU with `compute_type="int8"`, model from config (`small`; `base` if `small` is too slow), stored in `storage/models/`.
   3. Language fixed to **English** (`language="en"`). This is faster and more accurate than auto-detection.
   4. Pass an `initial_prompt` with dental vocabulary (implant brands Osstem/Megagen/Straumann/Nobel/Neodent, "zirconia", "MTA", "endodontic", "scaling and root planing", FDI tooth numbers…) to improve recognition.
   5. Load the model once at startup (lazy singleton), not per request.
 - **Done when:** A recording of a T0.2 note is transcribed with the key terms correct (brands, tooth numbers, procedure names).
 
-#### T2.4 Editable transcript & text fallback — ⬜ Todo
+#### T2.4 Editable transcript & text fallback — ✅ Done (2026-11-23)
 - **Steps:** Show the transcript in an editable textarea; the dentist can fix words before building the plan. Also allow **typing/pasting** notes directly (needed to test with the T0.2 text notes). `PUT /api/sessions/{id}/transcript`.
 - **Done when:** A pasted practice note can go through the whole pipeline without audio.
 
@@ -198,11 +206,11 @@ Each task has: **Goal**, **Steps**, **Done when** (acceptance test), **Status**.
 
 Order inside this phase: the deterministic parts are built first (schemas → rules → matcher → pricing), then the LLM parts (prompts → client and `build_plan`).
 
-#### T3.1 Domain schemas — ⬜ Todo
+#### T3.1 Domain schemas — ✅ Done (2026-11-23)
 - **Steps:** Pydantic models in `backend/app/models/schemas.py` (see [ARCHITECTURE.md §6](ARCHITECTURE.md#6-data-model)): `CatalogItem`, `Procedure` (Step A output), `PlanItem`, `Stage`, `Interval`, `ClarifyingQuestion`, `PlanDraft` (Step B output), `TreatmentPlan` (priced, versioned), `Session`.
 - **Done when:** Models exist, have docstrings, and round-trip to JSON in a test.
 
-#### T3.2 Clinic rules, default intervals & synonyms — ⬜ Todo
+#### T3.2 Clinic rules, default intervals & synonyms — ✅ Done (2026-11-23)
 - **Steps:**
   1. `backend/app/rules/clinic_rules.yaml`, editable without code:
      - Default intervals between stages, e.g. extraction → implant: 3–4 months (or immediate if dictated); implant → crown: 3–6 months (osseointegration); root canal → crown: 1–2 weeks; sinus lift → implant: 6–9 months; scaling → periodontal re-evaluation: 3–6 months (matches the catalog item "Periodontal follow-up examination… 3–6 months after treatment").
@@ -211,23 +219,23 @@ Order inside this phase: the deterministic parts are built first (schemas → ru
   2. `backend/app/rules/synonyms.yaml`: dentist wording → catalog wording (e.g. "RCT" / "root canal" / "endo" → root canal treatment; "filling" → restoration; "cleaning" → professional hygiene; "Korean implant" → Osstem/Megagen; "crown on implant" → zirconia crown on implant).
 - **Done when:** Both files load in a test, and the `validated_by` field is reported by `/api/health` (`rules_validated: false` until reviewed).
 
-#### T3.3 Catalog matcher (candidate shortlist) — ⬜ Todo
-- **Goal:** Shrink the choice for the local LLM from 209 items to about 5 candidates per procedure.
+#### T3.3 Catalog matcher (candidate shortlist) — ✅ Done (2026-11-23)
+- **Goal:** Shrink the choice for the local LLM from 208 items to about 5 candidates per procedure.
 - **Steps:**
   1. `backend/app/services/matcher.py`: for each procedure, score every catalog item with `rapidfuzz` (token-set ratio on the normalized name), after expanding the dentist's words with `synonyms.yaml` (T3.2).
   2. Use context to filter: tooth type from the FDI number (incisor/canine → "anterior"/"incisors and canines", premolar, molar) and the section hint.
   3. Return the top 5 candidates with scores. If the best score is high and clearly ahead, auto-select it. Otherwise the candidates go to the LLM (Step B, T3.6). If several candidates differ in price, raise a clarifying question.
 - **Done when:** Unit tests map at least 15 typical phrases (e.g. "root canal on 36" → *Root canal treatment — molars*; "two-surface filling on 21" → *Two-surface restoration of an anterior tooth*) to the right catalog item, with no LLM call.
 
-#### T3.4 Validation & pricing engine — ⬜ Todo
+#### T3.4 Validation & pricing engine — ✅ Done (2026-11-23)
 - **Steps:** `backend/app/services/pricing.py`:
   1. Reject/flag any `catalog_id` not in the catalog (turn it into a question instead of crashing).
   2. `unit_price` comes **only** from the catalog; `line_total = unit_price × quantity`; stage subtotal; grand total. Use `Decimal`, round half-up to 2 decimals.
   3. Sanity checks: tooth numbers valid FDI (11–48, 51–85), quantity ≥ 1, no stage without items.
 - **Done when:** Unit tests prove totals are exact (on a hand-built `PlanDraft`) and an unknown id produces a question, not a price.
 
-#### T3.5 Prompt design — ⬜ Todo
-- **Context:** small local models do worse with 209 catalog lines in the prompt, so plan building uses **two LLM steps** (see ARCHITECTURE §7):
+#### T3.5 Prompt design — ✅ Done (2026-11-23)
+- **Context:** small local models do worse with 208 catalog lines in the prompt, so plan building uses **two LLM steps** (see ARCHITECTURE §7):
   - **Step A – Extract:** transcript → list of dictated procedures in the dentist's own words, plus teeth, quantity, stage hints and intervals. No catalog yet.
   - **Step B – Map:** for each procedure, the matcher (T3.3) shortlists the top 5 catalog candidates. The LLM picks one, or flags the item as ambiguous so it becomes a question. It also groups items into stages and writes the questions.
 - **Steps:** Write `backend/app/prompts/extract_procedures.md`, `map_to_catalog.md`, `revise_plan.md`, in English. Keep prompts short and explicit, with 1–2 worked examples (few-shot): small models follow examples better than long rules. The prompts must:
@@ -241,7 +249,7 @@ Order inside this phase: the deterministic parts are built first (schemas → ru
   8. Write all text (stage titles, goals, questions) in plain English.
 - **Done when:** The prompts are reviewed and stored as files (not hard-coded strings).
 
-#### T3.6 Local LLM client & plan builder — ⬜ Todo
+#### T3.6 Local LLM client & plan builder — ✅ Done (2026-11-23)
 - **Steps:**
   1. `backend/app/services/llm.py`: an `LLMClient` interface with one method, `generate_json(system, user, schema: type[BaseModel]) -> BaseModel`. The default implementation is `OllamaClient`, using the official `ollama` Python package, with `think=False` (qwen3).
   2. **Constrained JSON output:** pass `format=Schema.model_json_schema()` to `ollama.chat` so the output follows the schema. Then validate with Pydantic. If validation fails, retry up to 2 times with the validation error added to the prompt.
@@ -258,7 +266,7 @@ Order inside this phase: the deterministic parts are built first (schemas → ru
 
 ### Phase 4 — PDF generation (AC2)
 
-#### T4.1 PDF template — ⬜ Todo
+#### T4.1 PDF template — ✅ Done (2026-11-23)
 - **Steps:** `backend/app/services/pdf.py` with **ReportLab** (pure Python, works on Windows without GTK). All text in English. Content:
   1. Header: clinic name/address, dentist, patient label, date, **plan version**, status badge (`DRAFT – pending answers` / `FINAL – confirmed`).
   2. Summary: number of stages, estimated total duration, **grand total (EUR)**.
@@ -269,11 +277,11 @@ Order inside this phase: the deterministic parts are built first (schemas → ru
   7. Diagonal `DRAFT` watermark on non-final versions.
 - **Done when:** A plan built from a T0.2 note renders into a readable 1–3 page PDF; totals in the PDF equal the pricing-engine totals.
 
-#### T4.2 Versioned storage & download — ⬜ Todo
+#### T4.2 Versioned storage & download — ✅ Done (2026-11-23)
 - **Steps:** Save each version as `storage/sessions/{session_id}/plans/v{n}.json` + `v{n}.pdf`. Endpoints: `GET /api/sessions/{id}/plans` (list versions), `GET /api/sessions/{id}/plans/{n}` (JSON), `GET /api/sessions/{id}/plans/{n}/pdf`.
 - **Done when:** v1 and v2 are both downloadable after a revision.
 
-#### T4.3 Plan & PDF preview in the UI — ⬜ Todo
+#### T4.3 Plan & PDF preview in the UI — ✅ Done (2026-11-23)
 - **Steps:** Right panel shows the structured plan (stages, items, totals) plus an embedded PDF viewer (`<iframe>`) and a Download button; version selector; progress indicator while the plan is being built.
 - **Done when:** After "Build plan", the dentist sees the PDF without leaving the page.
 
@@ -281,7 +289,7 @@ Order inside this phase: the deterministic parts are built first (schemas → ru
 
 ### Phase 5 — Clarifying questions (AC3)
 
-#### T5.1 Question generation rules — ⬜ Todo
+#### T5.1 Question generation rules — ✅ Done (2026-11-23)
 - **Ask a question when** (examples from the price list):
   - Several catalog items fit and **the price differs**: implant system (Osstem / Megagen / Straumann BLT / Straumann SLActive / Nobel / zirconia), crown type (ML vs ST zirconia), All-on-4 vs All-on-6, temporary prosthesis type.
   - A **parameter is missing**: number of surfaces for a restoration, tooth number, number of implants, number of canals, wisdom-tooth difficulty grade (1/2, near anatomical structures).
@@ -291,11 +299,11 @@ Order inside this phase: the deterministic parts are built first (schemas → ru
 - **Rules:** max ~7 questions per round, most price-relevant first; each question has `id`, `text`, `options[]` (label + catalog ids + price impact), `allow_free_text`, `related_stage`/`related_item`. The plan is still built with a **provisional default** (cheapest or most common option, clearly marked) so a PDF is always produced.
 - **Done when:** On each T0.2 note, the expected questions (written in the `.expected.json`) are asked, and no question is about something the dentist already said.
 
-#### T5.2 Questions UI — ⬜ Todo
+#### T5.2 Questions UI — ✅ Done (2026-11-23)
 - **Steps:** Questions panel: each question as a card with option buttons (show the price difference), a free-text field, and a 🎤 button to **answer by voice** (reuses T2.1/T2.3 via `POST /api/transcribe`). A general "Other corrections" box (text or voice), e.g. "replace stage 3 implant with Straumann and remove the radiograph".
 - **Done when:** All questions can be answered by click, text, or voice.
 
-#### T5.3 Spoken questions — ⬜ Todo (optional)
+#### T5.3 Spoken questions — ✅ Done (2026-11-23) (optional)
 - **Steps:** "Read questions aloud" toggle using the browser `speechSynthesis` API with an English voice (no backend needed).
 - **Done when:** Questions are spoken aloud in English.
 
@@ -303,7 +311,7 @@ Order inside this phase: the deterministic parts are built first (schemas → ru
 
 ### Phase 6 — Revision, regeneration & confirmation (AC4)
 
-#### T6.1 Revise endpoint — ⬜ Todo
+#### T6.1 Revise endpoint — ✅ Done (2026-11-23)
 - **Steps:** `POST /api/sessions/{id}/revise` with `{answers: [{question_id, option_id | free_text}], corrections: "…"}`:
   1. Deterministic answers (option clicked → catalog ids) are applied **in code** where possible.
   2. Free text / voice corrections go to the LLM with the current plan JSON + `revise_plan.md` prompt → new `PlanDraft`.
@@ -311,11 +319,11 @@ Order inside this phase: the deterministic parts are built first (schemas → ru
   4. New questions may appear only if the corrections created new ambiguity.
 - **Done when:** Answering the questions of a T0.2 note produces v2 with updated items and totals and fewer/no open questions.
 
-#### T6.2 Version diff — ⬜ Todo (optional)
+#### T6.2 Version diff — ✅ Done (2026-11-23) (optional)
 - **Steps:** Compute a diff between versions (items added/removed/changed, total before → after) and show it in the UI ("What changed").
 - **Done when:** After a revision the dentist sees e.g. "+ Straumann BLT implant (tooth 36) · total 2 140.00 € → 2 510.00 €".
 
-#### T6.3 Confirmation & final PDF — ⬜ Todo
+#### T6.3 Confirmation & final PDF — ✅ Done (2026-11-23)
 - **Steps:** "Confirm plan" button, enabled only when no blocking questions remain (the dentist can explicitly accept remaining defaults). `POST /api/sessions/{id}/confirm` → final version: status `FINAL`, no watermark, signature lines, frozen (further edits create a new draft version).
 - **Done when:** The full loop works: dictate → PDF v1 → answer → PDF v2 → confirm → final PDF.
 
@@ -323,19 +331,19 @@ Order inside this phase: the deterministic parts are built first (schemas → ru
 
 ### Phase 7 — Quality, tests & demo
 
-#### T7.1 Unit tests — ⬜ Todo
+#### T7.1 Unit tests — ✅ Done (2026-11-23)
 - Catalog parsing, rules loading, matcher, pricing, FDI validation, PDF renders (file exists, page count, total string present), API routes with the LLM and STT **mocked**.
 - **Done when:** `.venv/python.exe -m pytest backend/tests` passes with no network access and without Ollama running.
 
-#### T7.2 End-to-end evaluation on the practice notes — ⬜ Todo
+#### T7.2 End-to-end evaluation on the practice notes — ✅ Done (2026-11-23)
 - **Steps:** `backend/scripts/eval_samples.py --model <ollama model>`: run each `data/sample_notes/note_XX.txt` through the local LLM, compare to `note_XX.expected.json` (items found / missing / extra, questions asked, total difference, duration), print a table. Compare `qwen3:4b` with 1–2 alternatives (T0.5) and keep the best as the default `LLM_MODEL`. Run it on demand, not in the unit tests.
 - **Done when:** All notes reach ≥ 90 % item recall and no invented items with the chosen default model, and the comparison table is saved in `docs/model_eval.md`.
 
-#### T7.3 Error handling, logging & privacy — ⬜ Todo
+#### T7.3 Error handling, logging & privacy — ✅ Done (2026-11-23)
 - Clear UI errors (mic denied, STT failure, Ollama not running / model missing, LLM timeout, invalid plan); structured logs without patient names; `storage/` git-ignored; button to delete a session (audio + plans).
 - **Done when:** Each failure mode shows a useful message and nothing crashes silently.
 
-#### T7.4 README & demo script — ⬜ Todo
+#### T7.4 README & demo script — 🟡 README written; the "classmate can run it" check needs a real person
 - `README.md`: setup (conda env, Ollama + `qwen3:4b`, `.env`, npm), run commands, screenshots, a demo script that walks through AC1 → AC4.
 - **Done when:** A classmate can run the project from the README alone.
 
@@ -352,12 +360,29 @@ Order inside this phase: the deterministic parts are built first (schemas → ru
 
 ---
 
-## 4. Change log
+## 4. Verification record (2026-11-23)
+
+| Check | Result |
+|---|---|
+| Unit + API tests (LLM and STT mocked, no network) | 53 passed |
+| Real model `qwen3:4b` on the 4 practice notes | 18/18 items, 0 invented, 0.00 € difference, 17–37 s per note |
+| Real model `qwen3:1.7b` on the same notes | 18/18 items, 0 invented, 4–15 s per note |
+| New dictation, spoken by Windows TTS, through the real UI in headless Edge with a simulated microphone | Transcribed in 10 s; plan, answers, v2 PDF, final PDF all correct (1 019.78 € checked by hand) |
+| Free-text correction with the real model | Removed one service and added another correctly |
+| Voice answer, read aloud, Ollama down, model missing | Work, with clear messages |
+
+**Not verified:** a real human voice on a real microphone; a dentist's review of the plans and intervals; the instructor's own notes. The practice notes were also used to tune the rules, so their 100 % score is optimistic.
+
+---
+
+## 5. Change log
 
 | Date | Change | By |
 |------|--------|----|
 | 2026-11-16 | Initial spec, architecture and agent instructions | Claude |
-| 2026-11-16 | Checked xlsx: price list only (209 services), no sample notes; T1.1 count fixed | Claude |
+| 2026-11-16 | Checked xlsx: price list only (208 services), no sample notes; T1.1 count fixed | Claude |
 | 2026-11-16 | Switched to a **fully local LLM** (Ollama): Ollama setup and catalog matcher tasks added, prompt/LLM/eval tasks rewritten | Claude |
 | 2026-11-16 | Hardware recorded (Ryzen 5 5500U, 14 GB RAM, Radeon iGPU). Default model `qwen3:4b` with thinking off; Ollama task set to 🟡 | Claude |
 | 2026-11-16 | Review fixes: **renumbered** so the order is the build order (Phase 0: T0.5 Ollama ↔ T0.6 frontend; Phase 3: schemas → rules → matcher → pricing → prompts → LLM client); T0.2 unblocked with synthetic practice notes; T1.2 report, T1.3, T5.3, T6.2 marked optional; SQLite replaced by JSON files; default intervals must be validated by a dentist; **English only** | Claude |
+| 2026-11-23 | Built T0.2 → T7.4. Corrected two spec errors: the price list has **208** services (not 209) and root canal on a molar is **89.60 €** (109.51 € is the re-treatment). Stages and questions are built by code from `families.yaml`; the LLM extracts procedures, picks from shortlists and interprets corrections | Claude |
+| 2026-11-23 | Added the tracker for the three remaining actions (A1 commit, A2 real voice, A3 classmate); all three checked and still open | Claude |

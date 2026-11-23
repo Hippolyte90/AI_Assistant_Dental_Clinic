@@ -1,0 +1,12 @@
+line-length = 100
+src = ["."]
+
+[lint]
+select = ["E", "F", "I", "B", "SIM"]
+# FastAPI's File(...) default is the documented pattern.
+ignore = ["B008"]
+
+[lint.per-file-ignores]
+"scripts/*" = ["E402", "E501"]
+"tests/conftest.py" = ["E402"]
+"tests/test_*.py" = ["E501"]

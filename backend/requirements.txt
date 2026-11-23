@@ -1,0 +1,17 @@
+fastapi
+uvicorn[standard]
+pydantic>=2
+pydantic-settings
+python-multipart
+ollama
+rapidfuzz
+faster-whisper==1.2.1
+# PyAV 19 removed an argument that faster-whisper 1.2.1 still passes.
+av>=15,<16
+openpyxl
+reportlab
+pyyaml
+pypdf
+pytest
+httpx
+ruff

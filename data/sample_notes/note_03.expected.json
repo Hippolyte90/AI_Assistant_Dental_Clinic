@@ -1,0 +1,29 @@
+{
+ "note": "note_03",
+ "synthetic": true,
+ "expected_questions": [],
+ "total_eur": "184.98",
+ "items": [
+  {
+   "section": "Periodontics",
+   "name": "Periodontal consultation and initial periodontal charting",
+   "teeth": [],
+   "quantity": 1,
+   "catalog_id": "perio-001"
+  },
+  {
+   "section": "Periodontics",
+   "name": "Scaling and root planing (SRP), one jaw",
+   "teeth": [],
+   "quantity": 2,
+   "catalog_id": "perio-019"
+  },
+  {
+   "section": "Periodontics",
+   "name": "Periodontal follow-up examination with charting, 3–6 months after treatment",
+   "teeth": [],
+   "quantity": 1,
+   "catalog_id": "perio-020"
+  }
+ ]
+}

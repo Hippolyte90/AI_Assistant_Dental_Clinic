@@ -1,0 +1,40 @@
+# Clinic rules, editable without code.
+# WARNING: the default intervals below are clinical ASSUMPTIONS written by the developers.
+# They stay flagged as assumptions in every plan until a dentist reviews this file
+# and fills in the two fields below.
+validated_by: ""
+validated_on: ""
+
+# Stages are always built in this order.
+stages:
+  - {key: diagnostic, title: Diagnosis, goal: Examine the patient and confirm the diagnosis.}
+  - {key: periodontal, title: Periodontal treatment, goal: Control gum disease before further treatment.}
+  - {key: endodontic, title: Endodontic treatment, goal: Treat the root canals and remove infection.}
+  - {key: restorative, title: Restorative treatment, goal: Restore the function and shape of the teeth.}
+  - {key: surgery, title: Oral surgery, goal: Carry out the planned surgical procedures.}
+  - {key: implant, title: Implant placement, goal: Place the implants and allow healing.}
+  - {key: prosthetic, title: Implant prosthetics, goal: Restore the implants with final prosthetics.}
+  - {key: maintenance, title: Follow-up and maintenance, goal: Check healing and keep the result stable.}
+
+# Default interval between two consecutive stages ("from>to").
+default_interval: {min_days: 7, max_days: 14, reason: next available appointment}
+intervals:
+  diagnostic>periodontal: {min_days: 1, max_days: 7, reason: start of treatment after diagnosis}
+  diagnostic>endodontic: {min_days: 1, max_days: 7, reason: start of treatment after diagnosis}
+  periodontal>endodontic: {min_days: 14, max_days: 28, reason: gum healing after periodontal treatment}
+  periodontal>surgery: {min_days: 28, max_days: 56, reason: gum healing before surgery}
+  periodontal>maintenance: {min_days: 90, max_days: 180, reason: periodontal re-evaluation}
+  endodontic>restorative: {min_days: 7, max_days: 14, reason: symptom check after root canal treatment}
+  surgery>implant: {min_days: 90, max_days: 120, reason: socket healing after extraction}
+  implant>prosthetic: {min_days: 90, max_days: 180, reason: osseointegration of the implant}
+  surgery>maintenance: {min_days: 7, max_days: 14, reason: post-operative check}
+  surgery>restorative: {min_days: 7, max_days: 14, reason: healing after surgery}
+
+# A family in the earlier stage overrides the interval above.
+family_intervals:
+  sinus_lift>implant: {min_days: 180, max_days: 270, reason: graft maturation after sinus lift}
+
+# Items added without being dictated. All off by default.
+auto_add:
+  - {enabled: false, stage: surgery, item: "surg|Local anaesthesia"}
+  - {enabled: false, stage: implant, item: "impl|Single-use surgical kit"}

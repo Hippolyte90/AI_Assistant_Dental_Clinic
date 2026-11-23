@@ -1,0 +1,42 @@
+{
+ "note": "note_04",
+ "synthetic": true,
+ "expected_questions": [
+  "wisdom_grade"
+ ],
+ "total_eur": "345.07",
+ "items": [
+  {
+   "section": "Surgery",
+   "name": "Extraction of a wisdom tooth (Grade 1 complexity), with socket suturing and antimicrobial sponge placement",
+   "teeth": [
+    38
+   ],
+   "quantity": 1,
+   "catalog_id": "surg-010"
+  },
+  {
+   "section": "Sedation with anaesthesiologist – adults",
+   "name": "Sedation – first hour",
+   "teeth": [],
+   "quantity": 1,
+   "catalog_id": "sed-001"
+  },
+  {
+   "section": "Sedation with anaesthesiologist – adults",
+   "name": "Sedation – each additional hour",
+   "teeth": [],
+   "quantity": 1,
+   "catalog_id": "sed-002"
+  },
+  {
+   "section": "Restorative dentistry (treatment)",
+   "name": "Fluoride varnish application, 1 tooth",
+   "teeth": [
+    37
+   ],
+   "quantity": 1,
+   "catalog_id": "rest-011"
+  }
+ ]
+}

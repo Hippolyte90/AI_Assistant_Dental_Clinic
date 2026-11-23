@@ -1,0 +1,64 @@
+{
+ "note": "note_02",
+ "synthetic": true,
+ "expected_questions": [
+  "surfaces"
+ ],
+ "total_eur": "214.44",
+ "items": [
+  {
+   "section": "Endodontics",
+   "name": "Local anaesthesia",
+   "teeth": [
+    36
+   ],
+   "quantity": 1,
+   "catalog_id": "endo-009"
+  },
+  {
+   "section": "Endodontics",
+   "name": "Rubber dam placement",
+   "teeth": [
+    36
+   ],
+   "quantity": 1,
+   "catalog_id": "endo-019"
+  },
+  {
+   "section": "Endodontics",
+   "name": "Root canal treatment — molars",
+   "teeth": [
+    36
+   ],
+   "quantity": 1,
+   "catalog_id": "endo-012"
+  },
+  {
+   "section": "Restorative dentistry (treatment)",
+   "name": "Core build-up of a molar for a prosthetic restoration",
+   "teeth": [
+    36
+   ],
+   "quantity": 1,
+   "catalog_id": "rest-002"
+  },
+  {
+   "section": "Restorative dentistry (treatment)",
+   "name": "Two-surface restoration of an anterior tooth",
+   "teeth": [
+    11
+   ],
+   "quantity": 1,
+   "catalog_id": "rest-020"
+  },
+  {
+   "section": "Restorative dentistry (treatment)",
+   "name": "Restoration of an anterior tooth, 1 surface",
+   "teeth": [
+    21
+   ],
+   "quantity": 1,
+   "catalog_id": "rest-018"
+  }
+ ]
+}

@@ -1,0 +1,56 @@
+{
+ "note": "note_01",
+ "synthetic": true,
+ "expected_questions": [
+  "brand",
+  "crown_type"
+ ],
+ "total_eur": "975.76",
+ "items": [
+  {
+   "section": "Surgery",
+   "name": "Tooth extraction and socket preservation",
+   "teeth": [
+    46
+   ],
+   "quantity": 1,
+   "catalog_id": "surg-032"
+  },
+  {
+   "section": "Implantology",
+   "name": "Osstem implant placement (Korea)",
+   "teeth": [
+    46
+   ],
+   "quantity": 1,
+   "catalog_id": "impl-009"
+  },
+  {
+   "section": "Implantology",
+   "name": "Healing abutment placement",
+   "teeth": [
+    46
+   ],
+   "quantity": 1,
+   "catalog_id": "impl-012"
+  },
+  {
+   "section": "Implant prosthetics",
+   "name": "Osstem abutment placement",
+   "teeth": [
+    46
+   ],
+   "quantity": 1,
+   "catalog_id": "pros-010"
+  },
+  {
+   "section": "Implant prosthetics",
+   "name": "ML zirconia crown on Osstem implant",
+   "teeth": [
+    46
+   ],
+   "quantity": 1,
+   "catalog_id": "pros-002"
+  }
+ ]
+}

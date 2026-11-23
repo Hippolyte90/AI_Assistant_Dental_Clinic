@@ -1,0 +1,240 @@
+# Procedure families: deterministic mapping from dictated words to catalog items.
+# Items are "<section prefix>|<exact catalog name>".
+# An option with `requires` is only eligible when one of those words was said, and then wins
+# over options without `requires`. Order matters: the first matching family is used.
+
+protected_phrases:
+  - scaling and root planing
+  - extraction and socket preservation
+  - consultation and initial charting
+  - consultation and initial periodontal charting
+  - examination with charting
+
+# Words describing a condition. A "procedure" with only these is a diagnosis and is dropped.
+diagnosis_terms: [caries, pulpitis, periodontitis, gingivitis, abscess, fracture, inflammation, pain, cannot be restored]
+
+dimensions:
+  brand:
+    scope: global
+    question: Which implant system should be used?
+    default: osstem
+    values:
+      osstem: {label: Osstem, keywords: [osstem, ostem]}
+      megagen: {label: Megagen, keywords: [megagen, mega gen]}
+      straumann: {label: Straumann, keywords: [straumann, strauman]}
+      nobel: {label: Nobel, keywords: [nobel]}
+  crown_type:
+    scope: global
+    question: Which type of zirconia crown on the implant?
+    default: ml
+    values:
+      ml: {label: ML zirconia, keywords: [ml zirconia, multilayer, multi-layer]}
+      st: {label: ST zirconia, keywords: [st zirconia, standard zirconia]}
+  surfaces:
+    scope: procedure
+    question: "How many surfaces for the restoration on tooth {teeth}?"
+    default: one
+    values:
+      one: {label: One surface, keywords: [one surface, one-surface, 1 surface, 1-surface, single surface, single-surface]}
+      two: {label: Two surfaces, keywords: [two surface, two-surface, 2 surface, 2-surface]}
+  wisdom_grade:
+    scope: procedure
+    question: "What is the difficulty of the wisdom tooth extraction on tooth {teeth}?"
+    default: g1
+    values:
+      g1: {label: Grade 1, keywords: [grade 1, grade one]}
+      g2: {label: Grade 2, keywords: [grade 2, grade two]}
+      anatomical: {label: Adjacent to anatomical structures, keywords: [anatomical, near the nerve, close to the nerve]}
+  srp_scope:
+    scope: procedure
+    question: Is scaling and root planing per tooth or per jaw?
+    default: jaw
+    values:
+      jaw: {label: One jaw, keywords: [jaw, upper, lower, arch, full mouth]}
+      tooth: {label: One tooth, keywords: [one tooth, per tooth]}
+
+families:
+  - id: wisdom_extraction
+    category: surgery
+    triggers: [wisdom]
+    exclude: [operculum, bud]
+    dimensions: [wisdom_grade]
+    quantity: per_tooth
+    options:
+      - {item: "surg|Extraction of a wisdom tooth (Grade 1 complexity), with socket suturing and antimicrobial sponge placement", wisdom_grade: g1}
+      - {item: "surg|Extraction of a wisdom tooth (Grade 2 complexity)", wisdom_grade: g2}
+      - {item: "surg|Extraction of a wisdom tooth adjacent to anatomical structures", wisdom_grade: anatomical}
+      - {item: "surgra|Wisdom tooth extraction, Grade 1 difficulty, with socket suturing and antimicrobial sponge placement", wisdom_grade: g1, requires: [dr. r.a, dr r.a]}
+      - {item: "surgra|Wisdom tooth extraction, Grade 2 difficulty, with socket suturing and antimicrobial sponge placement", wisdom_grade: g2, requires: [dr. r.a, dr r.a]}
+  - id: extraction
+    category: surgery
+    triggers: [extraction, extract, pull out, take out]
+    quantity: per_tooth
+    options:
+      - {item: "surg|Conventional tooth extraction with socket suturing and antimicrobial sponge placement"}
+      - {item: "surg|Complex tooth extraction with socket suturing and antimicrobial sponge placement", requires: [complex, surgical extraction]}
+      - {item: "surg|Tooth extraction and socket preservation", requires: [socket preservation]}
+  - id: retreatment
+    category: endodontic
+    triggers: [re-treatment, retreatment, retreat, redo the root canal]
+    dimensions: [tooth_type]
+    quantity: per_tooth
+    options:
+      - {item: "endo|Endodontic re-treatment (incisors and canines)", tooth_type: anterior}
+      - {item: "endo|Endodontic re-treatment (premolars)", tooth_type: premolar}
+      - {item: "endo|Endodontic re-treatment (molars)", tooth_type: molar}
+  - id: root_canal
+    category: endodontic
+    triggers: [root canal, rct, endodontic treatment, endo on]
+    exclude: [disobturation, revision, filling of, separated]
+    dimensions: [tooth_type]
+    quantity: per_tooth
+    options:
+      - {item: "endo|Root canal treatment — anterior teeth (incisors and canines)", tooth_type: anterior}
+      - {item: "endo|Root canal treatment — premolars", tooth_type: premolar}
+      - {item: "endo|Root canal treatment — molars", tooth_type: molar}
+  - id: core_buildup
+    category: restorative
+    triggers: [core build, build-up, buildup, build up]
+    exclude: [temporary]
+    dimensions: [tooth_type]
+    quantity: per_tooth
+    options:
+      - {item: "rest|Core build-up of a molar for a prosthetic restoration", tooth_type: molar}
+      - {item: "rest|Core build-up of an anterior tooth for a prosthetic restoration", tooth_type: anterior}
+  - id: healing_abutment
+    category: implant
+    triggers: [healing abutment, healing cap]
+    quantity: per_tooth
+    options:
+      - {item: "impl|Healing abutment placement"}
+      - {item: "impl|Custom healing abutment placement", requires: [custom]}
+  - id: implant_crown
+    category: prosthetic
+    triggers: [zirconia crown, crown on implant, crown on the implant, implant crown]
+    exclude: [temporary, removal]
+    dimensions: [brand, crown_type]
+    quantity: per_tooth
+    options:
+      - {item: "pros|ML zirconia crown on Osstem implant", brand: osstem, crown_type: ml}
+      - {item: "pros|ML zirconia crown on Straumann implant", brand: straumann, crown_type: ml}
+      - {item: "pros|ML zirconia crown on Megagen implant", brand: megagen, crown_type: ml}
+      - {item: "pros|ML zirconia crown on Nobel implant", brand: nobel, crown_type: ml}
+      - {item: "pros|ST zirconia crown on Osstem implant", brand: osstem, crown_type: st}
+      - {item: "pros|ST zirconia crown on Straumann implant", brand: straumann, crown_type: st}
+      - {item: "pros|ST zirconia crown on Megagen implant", brand: megagen, crown_type: st}
+  - id: implant_abutment
+    category: prosthetic
+    triggers: [abutment]
+    exclude: [multi-unit, multi unit, temporary, custom, immediate]
+    dimensions: [brand]
+    quantity: per_tooth
+    options:
+      - {item: "pros|Osstem abutment placement", brand: osstem}
+      - {item: "pros|Megagen abutment placement", brand: megagen}
+      - {item: "pros|Straumann abutment placement", brand: straumann}
+      - {item: "pros|Nobel abutment placement", brand: nobel}
+  - id: implant_placement
+    category: implant
+    triggers: [implant]
+    exclude: [crown, abutment, removal, remove, guide, impression, sinus, bone, graft, mini, all-on, all on, prosthesis, idr, scan]
+    dimensions: [brand]
+    quantity: per_tooth
+    options:
+      - {item: "impl|Osstem implant placement (Korea)", brand: osstem}
+      - {item: "impl|Osstem SOI implant placement", brand: osstem, requires: [soi]}
+      - {item: "impl|Megagen implant placement", brand: megagen}
+      - {item: "impl|Megagen AnyOne implant placement", brand: megagen, requires: [anyone, any one]}
+      - {item: "impl|Megagen ST implant placement", brand: megagen, requires: [megagen st]}
+      - {item: "impl|Megagen AnyRidge implant placement", brand: megagen, requires: [anyridge, any ridge]}
+      - {item: "impl|Straumann BLT implant placement (Switzerland)", brand: straumann}
+      - {item: "impl|Straumann SLAactive implant placement", brand: straumann, requires: [slactive, slaactive, sla active]}
+      - {item: "impl|Nobel implant placement", brand: nobel}
+  - id: restoration
+    category: restorative
+    triggers: [filling, restoration, restore]
+    exclude: [crown, core, polish, aesthetic, canal, cannot be restored, prosthetic]
+    dimensions: [tooth_type, surfaces]
+    quantity: per_tooth
+    options:
+      - {item: "rest|Restoration of a molar, 1 surface", tooth_type: molar, surfaces: one}
+      - {item: "rest|Restoration of a single-surface molar", tooth_type: molar, surfaces: one}
+      - {item: "rest|Restoration of a two-surface molar", tooth_type: molar, surfaces: two}
+      - {item: "rest|Restoration of an anterior tooth, 1 surface", tooth_type: anterior, surfaces: one}
+      - {item: "rest|Restoration of a single-surface anterior tooth", tooth_type: anterior, surfaces: one}
+      - {item: "rest|Two-surface restoration of an anterior tooth", tooth_type: anterior, surfaces: two}
+  - id: srp
+    category: periodontal
+    triggers: [root planing, srp]
+    context_words: [both jaws, upper jaw, lower jaw, upper and lower, full mouth]
+    dimensions: [srp_scope]
+    options:
+      - {item: "perio|Scaling and root planing (SRP), one jaw", srp_scope: jaw, quantity: jaws}
+      - {item: "perio|Scaling and root planing (SRP), one tooth", srp_scope: tooth, quantity: per_tooth}
+  - id: perio_followup
+    category: maintenance
+    triggers: [follow-up examination, follow up examination, periodontal follow-up, periodontal follow up, periodontal re-evaluation]
+    absorbs: [charting, with charting]
+    options:
+      - {item: "perio|Periodontal follow-up examination with charting, 3–6 months after treatment"}
+  - id: perio_consult
+    category: diagnostic
+    triggers: [periodontal consultation, initial charting, periodontal charting]
+    exclude: [follow]
+    absorbs: [charting, initial charting]
+    options:
+      - {item: "perio|Periodontal consultation and initial periodontal charting"}
+  - id: scaling
+    category: periodontal
+    triggers: [scaling]
+    options:
+      - {item: "perio|Scaling"}
+  - id: hygiene
+    category: periodontal
+    triggers: [professional hygiene, cleaning]
+    options:
+      - {item: "perio|Professional hygiene"}
+      - {item: "perio|Partial professional hygiene", requires: [partial]}
+  - id: fluoride
+    category: restorative
+    triggers: [fluoride]
+    quantity: per_tooth
+    options:
+      - {item: "rest|Fluoride varnish application, 1 tooth"}
+      - {item: "rest|Fluoride varnish application, 1 segment (6 teeth)", requires: [segment]}
+  - id: sinus_lift
+    category: surgery
+    triggers: [sinus lift]
+    fuzzy: true
+  - id: sedation
+    category: adjunct
+    triggers: [sedation]
+    special: sedation
+  - id: local_anaesthesia
+    category: adjunct
+    triggers: [local anaesthesia, local anesthesia, local anaesthetic, local anesthetic]
+    contextual: Local anaesthesia
+  - id: rubber_dam
+    category: adjunct
+    triggers: [rubber dam]
+    contextual: Rubber dam placement
+  - id: radiograph
+    category: diagnostic
+    triggers: [radiograph, x-ray, xray, x ray]
+    options:
+      - {item: "rest|Dental radiograph"}
+  - id: consultation
+    category: diagnostic
+    triggers: [consultation]
+    options:
+      - {item: "rest|Extended consultation"}
+
+section_categories:
+  rest: restorative
+  perio: periodontal
+  endo: endodontic
+  surg: surgery
+  surgra: surgery
+  impl: implant
+  pros: prosthetic
+  sed: adjunct

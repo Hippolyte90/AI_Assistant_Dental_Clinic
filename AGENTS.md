@@ -29,10 +29,11 @@ Claude Code reads [CLAUDE.md](CLAUDE.md), which has the same rules. **If you cha
 - Never commit `.env`, `storage/`, audio, or real patient data. No patient names in logs.
 - **English only** (Whisper `language="en"`, prompts, questions, UI, PDF). Storage is JSON files in `storage/sessions/{id}/`, with no database.
 - Test notes in `data/sample_notes/` are **synthetic practice notes** (SPEC T0.2) and must stay labelled `SYNTHETIC PRACTICE NOTE`. Never present them as real instructor or patient data.
+- Procedure families, question wording and diagnosis terms live in `backend/app/rules/families.yaml`. Whisper files stay in `storage/models/`; PyAV is pinned below 16.
 - Default intervals in `clinic_rules.yaml` are shown as assumptions until a dentist fills in `validated_by`.
 - **Local only:** never add calls to cloud AI/LLM/STT services (OpenAI, Anthropic, Google, …). The LLM goes through the `LLMClient` interface (`backend/app/services/llm.py`), implemented with the `ollama` Python package.
 - Ollama calls always set `think=False`, `format=<schema>`, `temperature=0` and an explicit `num_ctx` (8192) (the default context silently truncates). Validate the output with Pydantic and retry on failure.
-- Keep the pipeline extract → match (code) → map → revise. Don't send the whole 209-item catalog to the model in one prompt.
+- Keep the pipeline extract → match (code) → map → revise. Don't send the whole 208-item catalog to the model in one prompt.
 - Unit tests mock the LLM and STT and must pass without Ollama running. `backend/scripts/eval_samples.py` is slow: run it only when asked.
 
 ## Setup & commands (Windows, conda env in `.venv/`)
